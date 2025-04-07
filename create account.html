@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <style>
+        /* Reset some basic elements for consistency */
+        body, h2, form {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Full-screen body styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container for the registration form */
+        .create-account-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Styling for the form heading */
+        .create-account-container h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Styling for form groups */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        /* Styling for labels */
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        /* Styling for input fields */
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Styling for buttons */
+        .form-group button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Primary button styling */
+        .btn-primary {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+
+        /* Secondary button styling */
+        .btn-secondary {
+            background-color: #007bff;
+            color: #fff;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for error messages */
+        .error-message {
+            color: #d9534f;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="create-account-container">
+        <h2>Create Account</h2>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <form id="create-account-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-primary">Create Account</button>
+            </div>
+        </form>
+        <div class="form-group">
+            <button onclick="location.href='landing page.html'" class="btn-secondary">Already have an account? Sign In</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('create-account-form');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !email || !password) {
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = 'All fields are required!';
+                return;
+            }
+
+            // Perform account creation request
+            fetch('http://localhost:5000/signup', {  // This URL matches your backend route
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => {
+                // Handle non-JSON responses (e.g., server errors as text)
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(text || 'Signup failed');
+                    });
+                }
+            })
+            .then(data => {
+                console.log(data);
+                // Your backend sends a plain text response on success ("User created successfully")
+                // and plain text error messages on failure.
+                if (data === 'User created successfully') {
+                    window.location.href = 'login.html'; // Redirect on success
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerText = data || 'Error creating account.';
+                }
+            })
+            .catch(error => {
+                console.error('Signup error:', error);
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = error.message || 'An error occurred, please try again.';
+            });
+        });
+    </script>
+
+</body>
+</html>

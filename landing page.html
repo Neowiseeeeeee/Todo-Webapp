@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        /* Reset some basic elements for consistency */
+        body, h2, form {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Full-screen body styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container for the login form */
+        .login-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Styling for the form heading */
+        .login-container h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Styling for form groups */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        /* Styling for labels */
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        /* Styling for input fields */
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Styling for buttons */
+        .form-group button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Primary button styling */
+        .btn-primary {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+
+        /* Secondary button styling */
+        .btn-secondary {
+            background-color: #007bff;
+            color: #fff;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for the "Forgot password" link */
+        .forgot-password {
+            text-align: right;
+            display: block;
+            margin-top: 0.5rem;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        /* Styling for error messages */
+        .error-message {
+            color: #d9534f;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <a href="forget.html" class="forgot-password">Forgot password?</a>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-primary">Sign In</button>
+            </div>
+        </form>
+        <div class="form-group">
+            <button onclick="location.href='create account.html'" class="btn-secondary">Create Account</button>
+        </div>
+    </div>
+
+    <script>
+        // Ensure user is logged out when arriving at the login page
+        sessionStorage.removeItem('loggedIn');  // Remove the logged-in flag on login page load
+
+        // Check if the user is already logged in (check for 'loggedIn' flag in sessionStorage)
+        if (sessionStorage.getItem('loggedIn') === 'true') {
+            window.location.href = 'index.html'; // Redirect to the index page if logged in
+        }
+
+        const form = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = 'Both fields are required!';
+                return;
+            }
+
+            // Perform login request
+            fetch('http://localhost:5000/login', {  // Make sure to use the full URL with localhost and port
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    sessionStorage.setItem('loggedIn', 'true'); // Store loggedIn flag (optional, but can be useful)
+                    localStorage.setItem('loggedInUserId', data.userId); // Store the userId
+                    window.location.href = 'index.html'; // Redirect to index.html after successful login
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerText = data.message || 'Invalid email or password.';
+                }
+            })
+            .catch(error => {
+                // Catch any network or unexpected errors
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = 'An error occurred, please try again.';
+            });
+        });
+    </script>
+</body>
+</html>
